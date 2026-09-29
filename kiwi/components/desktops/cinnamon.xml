@@ -1,0 +1,13 @@
+<image>
+	<profiles>
+		<profile name="Cinnamon-Desktop" description="Cinnamon Desktop">
+			<requires profile="DesktopCommon"/>
+		</profile>
+	</profiles>
+	<packages type="image" patternType="plusRecommended" profiles="Cinnamon-Desktop">
+		<!-- install env-group to resolve RhBug:1891500 -->
+		<namedCollection name="cinnamon-desktop-environment"/>
+		<namedCollection name="libreoffice"/>
+		<package name="exaile"/>
+	</packages>
+</image>

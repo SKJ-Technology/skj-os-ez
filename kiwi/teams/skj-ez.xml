@@ -1,0 +1,30 @@
+<image>
+	<profiles>
+		<profile name="SKJ-EZ-KDE-Live" description="SKJ OS EZ ISO Edition (KDE Plasma) Live ISO">
+			<requires profile="KDE-Desktop"/>
+			<requires profile="SKJ-LiveInstall"/>
+		</profile>
+	</profiles>
+	<packages type="bootstrap" patternType="plusRecommended" profiles="SKJ-EZ-KDE-Live">
+		<!-- from the local SKJ repo (build/repo) -->
+		<package name="skj-release"/>
+	</packages>
+	<packages type="image" patternType="plusRecommended" profiles="SKJ-EZ-KDE-Live">
+		<!-- SKJ branding, from the local SKJ repo -->
+		<package name="skj-logos"/>
+		<package name="skj-backgrounds-kde"/>
+		<package name="plymouth-theme-skj"/>
+		<package name="skj-fastfetch-config"/>
+		<package name="fastfetch"/>
+		<!-- Fedora branding, replaced by the SKJ packages above -->
+		<ignore name="fedora-release"/>
+		<ignore name="fedora-release-*"/>
+		<ignore name="generic-release*"/>
+		<ignore name="fedora-logos"/>
+		<ignore name="generic-logos"/>
+		<ignore name="desktop-backgrounds-kde"/>
+		<ignore name="f44-backgrounds-kde"/>
+		<ignore name="breeze-icon-theme-fedora"/>
+		<ignore name="plasma-welcome-fedora"/>
+	</packages>
+</image>

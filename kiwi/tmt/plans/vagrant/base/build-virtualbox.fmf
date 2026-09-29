@@ -1,0 +1,12 @@
+summary: Build base Vagrant image for VirtualBox
+discover:
+    how: fmf
+adjust:
+    enabled: false
+    when: arch != x86_64
+environment:
+    image_type: oem
+    image_profile: Cloud-Base-Vagrant-VirtualBox
+    kiwi_file: Fedora.kiwi
+execute:
+    how: tmt

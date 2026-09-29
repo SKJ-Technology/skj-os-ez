@@ -1,0 +1,12 @@
+{
+    "KPlugin": {
+        "Authors": [
+            {
+                "Name": "SKJ OS"
+            }
+        ],
+        "Id": "SKJ",
+        "License": "CC-BY-SA-4.0",
+        "Name": "SKJ OS EZ"
+    }
+}

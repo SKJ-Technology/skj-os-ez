@@ -1,0 +1,33 @@
+/* Anaconda gtk style overrides for SKJ OS EZ ISO Edition */
+
+/* vendor-specific colors */
+@define-color fedora #2563eb;
+
+/* logo and sidebar classes */
+
+.logo-sidebar {
+    background-image: url('/usr/share/anaconda/pixmaps/sidebar-bg.png');
+    background-color: @fedora;
+    background-repeat: no-repeat;
+}
+
+/* Add a logo to the sidebar */
+.logo {
+    background-image: url('/usr/share/anaconda/pixmaps/sidebar-logo.png');
+    background-position: 50% 20px;
+    background-repeat: no-repeat;
+    background-color: transparent;
+}
+
+/* This is a placeholder to be filled by a product-specific logo. */
+.product-logo {
+    background-image: none;
+    background-color: transparent;
+}
+
+AnacondaSpokeWindow #nav-box {
+    background-color: @fedora;
+    background-image: url('/usr/share/anaconda/pixmaps/topbar-bg.png');
+    background-repeat: repeat;
+    color: white;
+}

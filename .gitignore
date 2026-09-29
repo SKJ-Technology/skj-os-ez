@@ -1,0 +1,9 @@
+# reference downloads (Fedora RPMs, upstream clone)
+.ref/
+# build outputs (build/kiwi is root-owned)
+build/
+out/
+*.iso
+build.log
+# VM test screenshots
+vm/shots/

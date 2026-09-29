@@ -1,0 +1,27 @@
+<image>
+	<profiles>
+		<profile name="MATE-Desktop" description="MATE Desktop">
+			<requires profile="DesktopCommon"/>
+		</profile>
+	</profiles>
+	<packages type="image" patternType="plusRecommended" profiles="MATE-Desktop">
+		<!-- install env-group to resolve RhBug:1891500 -->
+		<namedCollection name="mate-desktop-environment"/>
+		<namedCollection name="compiz"/>
+		<namedCollection name="libreoffice"/>
+		<ignore name="audacious"/> <!-- breaks the desktop -->
+		<!-- drop things for size -->
+		<ignore name="@3d-printing"/>
+		<ignore name="@admin-tools"/>
+		<ignore name="@mate-applications"/>
+		<ignore name="brasero"/>
+		<ignore name="fedora-icon-theme"/>
+		<ignore name="gnome-icon-theme"/>
+		<ignore name="gnome-icon-theme-symbolic"/>
+		<ignore name="gnome-logs"/>
+		<ignore name="gnome-software"/>
+		<ignore name="gnome-user-docs"/>
+		<ignore name="evolution-help"/>
+		<ignore name="telnet"/> <!-- Legacy cmdline thing we don't want -->
+	</packages>
+</image>

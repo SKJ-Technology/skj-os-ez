@@ -1,0 +1,19 @@
+<image>
+	<profiles>
+		<profile name="Sway-Live" description="Sway Spin Live DVD">
+			<requires profile="Sway-Desktop"/>
+			<requires profile="LiveInstall"/>
+		</profile>
+		<profile name="Sway-Disk" description="Sway Spin Install Disk">
+			<requires profile="Sway-Desktop"/>
+			<requires profile="BootDiskCore"/>
+		</profile>
+	</profiles>
+	<packages type="bootstrap" patternType="plusRecommended" profiles="Sway-Live,Sway-Disk">
+		<package name="fedora-release-sway"/>
+	</packages>
+	<packages type="image" patternType="plusRecommended" profiles="Sway-Live">
+		<!-- Required to display installation instructions -->
+		<package name="nwg-wrapper"/>
+	</packages>
+</image>

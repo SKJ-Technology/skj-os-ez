@@ -1,0 +1,15 @@
+<image>
+	<profiles>
+		<profile name="Budgie-Live" description="Budgie Spin Live DVD">
+			<requires profile="Budgie-Desktop"/>
+			<requires profile="LiveInstall"/>
+		</profile>
+		<profile name="Budgie-Disk" description="Budgie Spin Install Disk">
+			<requires profile="Budgie-Desktop"/>
+			<requires profile="BootDiskCore"/>
+		</profile>
+	</profiles>
+	<packages type="bootstrap" patternType="plusRecommended" profiles="Budgie-Live,Budgie-Disk">
+		<package name="fedora-release-budgie"/>
+	</packages>
+</image>

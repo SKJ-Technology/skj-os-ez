@@ -1,0 +1,15 @@
+NAME="SKJ OS EZ ISO Edition"
+VERSION="44 (KDE Plasma)"
+RELEASE_TYPE=stable
+ID=skj-os-ez
+ID_LIKE=fedora
+VERSION_ID=44
+VERSION_CODENAME=""
+PRETTY_NAME="SKJ OS EZ ISO Edition (KDE Plasma)"
+ANSI_COLOR="0;38;2;37;99;235"
+LOGO=skj-logo-icon
+CPE_NAME="cpe:/o:skj:skj-os-ez:44"
+DEFAULT_HOSTNAME="skj-os-ez"
+SUPPORT_END=2027-05-19
+VARIANT="KDE Plasma"
+VARIANT_ID=kde

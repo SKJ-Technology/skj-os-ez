@@ -1,0 +1,15 @@
+<image>
+	<profiles>
+		<profile name="Xfce-Live" description="Xfce Spin Live DVD">
+			<requires profile="Xfce-Desktop"/>
+			<requires profile="LiveInstall"/>
+		</profile>
+		<profile name="Xfce-Disk" description="Xfce Spin Install Disk">
+			<requires profile="Xfce-Desktop"/>
+			<requires profile="BootDiskCore"/>
+		</profile>
+	</profiles>
+	<packages type="bootstrap" patternType="plusRecommended" profiles="Xfce-Live,Xfce-Disk">
+		<package name="fedora-release-xfce"/>
+	</packages>
+</image>

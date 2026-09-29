@@ -1,0 +1,9 @@
+summary: Build Generic base image
+discover:
+    how: fmf
+environment:
+    image_type: oem
+    image_profile: Cloud-Base-Generic
+    kiwi_file: Fedora.kiwi
+execute:
+    how: tmt

@@ -1,0 +1,30 @@
+<image>
+	<profiles>
+		<profile name="LXQt-Desktop" description="LXQt Desktop">
+			<requires profile="DesktopCommon"/>
+		</profile>
+	</profiles>
+	<packages type="image" patternType="plusRecommended" profiles="LXQt-Desktop">
+		<!-- install env-group to resolve RhBug:1891500 -->
+		<namedCollection name="lxqt-desktop-environment"/>
+		<namedCollection name="lxqt-apps"/>
+		<namedCollection name="lxqt-media"/>
+		<namedCollection name="lxqt-l10n"/>
+		<!-- remove unneeded stuff for a lightweight system -->
+		<package name="wqy-microhei-fonts"/> <!-- compact CJK font -->
+		<ignore name="naver-nanum-gothic-fonts"/> <!-- Korean: replaced by above -->
+		<ignore name="vlgothic-fonts"/> <!-- Japanese: replaced by above -->
+		<ignore name="adobe-source-han-sans-cn-fonts"/> <!-- Simplified Chinese: replaced by above -->
+		<ignore name="adobe-source-han-sans-tw-fonts"/> <!-- Traditional Chinese: replaced by above -->
+		<ignore name="pt-sans-fonts"/> <!-- Cyrillic (already supported by DejaVu) -->
+		<!-- these do not currently work: https://pagure.io/fedora-kiwi-descriptions/issue/112
+		<ignore name="@input-methods"/>
+		<ignore name="@admin-tools"/>
+		-->
+		<!-- because the input-methods group exclusion doesn't work, these aren't safe
+		<ignore name="scim*"/>
+		<ignore name="m17n*"/>
+		<ignore name="iok"/>
+		-->
+	</packages>
+</image>

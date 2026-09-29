@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!--
+  SKJ OS EZ ISO Edition - kiwi image description.
+  Built on Fedora's official kiwi descriptions (see UPSTREAM); only the
+  SKJ files (this one, components/skj-liveinstall.xml, teams/skj-ez.xml,
+  grub-x86-skj.cfg.iso-template and the SKJ block in config.sh) are ours.
+-->
+<image schemaversion="7.4" name="SKJ-OS-EZ" displayname="SKJ OS EZ ISO Edition">
+	<description type="system">
+		<author>SKJ OS</author>
+		<contact>jnowakowski741@gmail.com</contact>
+		<specification>SKJ OS EZ ISO Edition, based on Fedora Linux 44</specification>
+	</description>
+	<preferences>
+		<version>44</version>
+		<packagemanager>dnf5</packagemanager>
+		<locale>en_US</locale>
+		<keytable>us</keytable>
+		<timezone>UTC</timezone>
+		<release-version>44</release-version>
+	</preferences>
+	<include from="this://./repositories/core.xml"/>
+	<include from="this://./components/common.xml"/>
+	<include from="this://./components/boot.xml"/>
+	<include from="this://./components/desktops/common.xml"/>
+	<include from="this://./components/desktops/kde.xml"/>
+	<include from="this://./components/skj-liveinstall.xml"/>
+	<include from="this://./teams/skj-ez.xml"/>
+	<packages type="bootstrap">
+		<package name="filesystem"/>
+	</packages>
+</image>
