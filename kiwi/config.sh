@@ -564,6 +564,15 @@ if [[ "$kiwi_profiles" == *"SKJ"* ]]; then
 			exit 1
 		fi
 	done
+	## SKJ Hub must be in the image; Discover must not
+	rpm -q --quiet skj-hub
+	if rpm -q --quiet plasma-discover; then
+		echo "plasma-discover is installed next to the SKJ Hub" >&2
+		exit 1
+	fi
+	## Snap: socket-activated snapd, /snap for classic snaps
+	systemctl enable snapd.socket
+	[ -e /snap ] || ln -s /var/lib/snapd/snap /snap
 	## SKJ boot splash (kiwi builds the live initrd after this script)
 	plymouth-set-default-theme skj
 	grep -q '^Theme=skj' /etc/plymouth/plymouthd.conf

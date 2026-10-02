@@ -39,6 +39,15 @@ install -Dpm 0644 $S/data/skj-hub-notify.service %{buildroot}%{_userunitdir}/skj
 install -Dpm 0644 $S/data/skj-hub-notify.timer %{buildroot}%{_userunitdir}/skj-hub-notify.timer
 install -Dpm 0644 $S/data/90-skj-hub.preset %{buildroot}%{_userpresetdir}/90-skj-hub.preset
 
+%post
+# turn on the daily update check for every user (user preset)
+systemctl --global preset skj-hub-notify.timer >/dev/null 2>&1 || :
+
+%preun
+if [ $1 -eq 0 ]; then
+  systemctl --global disable skj-hub-notify.timer >/dev/null 2>&1 || :
+fi
+
 %files
 %{_datadir}/skj-hub/
 %{_bindir}/skj-hub
