@@ -1,0 +1,14 @@
+[Desktop Entry]
+Type=Application
+Name=SKJ Hub
+Name[pl]=SKJ Hub
+GenericName=Apps, updates and help
+GenericName[pl]=Aplikacje, aktualizacje i pomoc
+Comment=Get apps, keep your PC up to date and find help
+Comment[pl]=Instaluj aplikacje, aktualizuj komputer i znajdź pomoc
+Exec=skj-hub
+Icon=skj-logo-icon
+Terminal=false
+Categories=System;PackageManager;
+Keywords=apps;install;store;update;software;aplikacje;instaluj;sklep;aktualizacje;
+StartupNotify=true

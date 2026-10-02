@@ -1,0 +1,10 @@
+[Unit]
+Description=SKJ Hub: check for updates once a day
+
+[Timer]
+OnStartupSec=15min
+OnUnitActiveSec=1d
+Persistent=true
+
+[Install]
+WantedBy=timers.target

@@ -14,9 +14,10 @@ mkdir -p "$TOP" "$REPO"
 declare -A SRC=(
 	[skj-release]="$ROOT/packaging/skj-release/src"
 	[skj-logos]="$ROOT/packaging/skj-logos"
+	[skj-hub]="$ROOT/hub"
 )
 
-for pkg in skj-release skj-logos; do
+for pkg in skj-release skj-logos skj-hub; do
 	echo "==> building $pkg"
 	rpmbuild -bb \
 		--define "_topdir $TOP" \

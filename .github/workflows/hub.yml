@@ -1,0 +1,52 @@
+# Fast checks for the SKJ Hub (lint + tests, a few minutes), on every PR and
+# push to main that touches the hub. Runs in fedora:44 so the tests use the
+# same PySide6 as the ISO. The ISO build (build-iso.yml) runs separately.
+name: Hub
+
+on:
+  pull_request:
+    paths:
+      - "hub/**"
+      - "packaging/skj-hub/**"
+      - ".github/workflows/hub.yml"
+  push:
+    branches: [main]
+    paths:
+      - "hub/**"
+      - "packaging/skj-hub/**"
+      - ".github/workflows/hub.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    container: fedora:44
+    steps:
+      - name: Install test tools (Fedora repos)
+        run: |
+          dnf5 install -y --setopt=install_weak_deps=False \
+            git python3 python3-pyside6 python3-gobject python3-pytest python3-pytest-qt \
+            ruff mesa-libEGL rpm-build
+
+      - uses: actions/checkout@v5
+
+      - name: Lint
+        working-directory: hub
+        run: |
+          ruff check .
+          ruff format --check .
+
+      - name: Tests (headless)
+        working-directory: hub
+        env:
+          QT_QPA_PLATFORM: offscreen
+        run: python3 -m pytest -v -p no:cacheprovider
+
+      - name: Build the skj-hub RPM
+        run: |
+          ./scripts/build-rpms.sh
+          rpm -qlp build/repo/skj-hub-*.rpm
