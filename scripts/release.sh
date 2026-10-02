@@ -28,10 +28,13 @@ SERVER="${GITHUB_SERVER_URL:-https://github.com}"
 step() { echo; echo "==> [$(date '+%F %T')] $*"; }
 
 # PR descriptions and commit messages carry tool attribution lines
-# ("Generated with Claude Code", "Co-Authored-By: ..."); keep them out of the
-# release notes and squeeze the blank lines they leave behind.
+# ("🤖 Generated with [Claude Code](...)", "Co-Authored-By: ..."); keep them
+# out of the release notes and squeeze the blank lines they leave behind.
+# Only whole footer lines go: text that mentions the footer stays.
 strip_attribution() {
-	tr -d '\r' | sed -e '/Generated with \[Claude Code\]/d' -e '/^Co-Authored-By:/Id' | cat -s
+	tr -d '\r' | sed -E \
+		-e '/^[^[:alnum:]]*Generated with \[Claude Code\]\([^)]*\)[[:space:]]*$/d' \
+		-e '/^Co-Authored-By:/Id' | cat -s
 }
 
 shopt -s nullglob
