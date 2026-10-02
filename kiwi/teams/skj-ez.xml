@@ -26,5 +26,9 @@
 		<ignore name="f44-backgrounds-kde"/>
 		<ignore name="breeze-icon-theme-fedora"/>
 		<ignore name="plasma-welcome-fedora"/>
+		<!-- KDE Discover: the SKJ hub is the app store and updater, one app
+		     only so beginners aren't confused (until the hub ships, the ISO
+		     has no graphical app store or update notifier) -->
+		<ignore name="plasma-discover*"/>
 	</packages>
 </image>
