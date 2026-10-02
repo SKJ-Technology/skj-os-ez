@@ -2,7 +2,7 @@
 
 Name:           skj-release
 Version:        %{dist_version}
-Release:        1%{?dist}
+Release:        2%{?dist}
 Summary:        SKJ OS EZ ISO Edition release files (KDE Plasma)
 License:        MIT
 BuildArch:      noarch
@@ -34,7 +34,7 @@ Conflicts:      generic-release
 %description
 Release files for SKJ OS EZ ISO Edition (KDE Plasma), based on Fedora
 Linux %{version}: os-release, systemd presets, dnf defaults, rpm dist macros
-and the Anaconda installer profile.
+the Anaconda installer profile and Firefox defaults (homepage, bookmarks).
 
 %prep
 
@@ -71,6 +71,11 @@ install -d %{buildroot}%{_prefix}/lib/systemd/system-preset %{buildroot}%{_prefi
 install -pm 0644 %{_sourcedir}/presets/system/*.preset %{buildroot}%{_prefix}/lib/systemd/system-preset/
 install -pm 0644 %{_sourcedir}/presets/user/*.preset %{buildroot}%{_prefix}/lib/systemd/user-preset/
 
+# Firefox defaults: SKJ bookmarks + Firefox start page instead of Fedora's.
+# Fedora's firefox lives in /usr/lib64/firefox (x86_64 only, like the ISO).
+install -Dpm 0644 %{_sourcedir}/firefox/00-skj-default-prefs.js %{buildroot}/usr/lib64/firefox/browser/defaults/preferences/00-skj-default-prefs.js
+install -Dpm 0644 %{_sourcedir}/firefox/bookmarks.html %{buildroot}%{_datadir}/skj/firefox/bookmarks.html
+
 install -Dpm 0644 %{SOURCE0} %{buildroot}%{_licensedir}/%{name}/LICENSE
 
 %files
@@ -96,7 +101,14 @@ install -Dpm 0644 %{SOURCE0} %{buildroot}%{_licensedir}/%{name}/LICENSE
 %config(noreplace) %{_sysconfdir}/anaconda/profile.d/skj-os-ez-kde.conf
 %{_prefix}/lib/systemd/system-preset/*.preset
 %{_prefix}/lib/systemd/user-preset/*.preset
+/usr/lib64/firefox/browser/defaults/preferences/00-skj-default-prefs.js
+%dir %{_datadir}/skj
+%{_datadir}/skj/firefox/
 
 %changelog
+* Fri Oct 02 2026 SKJ OS <jnowakowski741@gmail.com> - 44-2
+- Firefox defaults: SKJ bookmarks for new profiles instead of Fedora's,
+  Firefox's own start page instead of start.fedoraproject.org
+
 * Tue Sep 29 2026 SKJ OS <jnowakowski741@gmail.com> - 44-1
 - First release for SKJ OS EZ ISO Edition (KDE Plasma), based on Fedora 44
