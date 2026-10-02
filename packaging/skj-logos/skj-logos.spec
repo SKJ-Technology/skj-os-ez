@@ -1,6 +1,6 @@
 Name:           skj-logos
 Version:        44.0
-Release:        2%{?dist}
+Release:        3%{?dist}
 Summary:        SKJ OS EZ logos and icons
 License:        CC-BY-SA-4.0 AND OFL-1.1
 BuildArch:      noarch
@@ -100,6 +100,13 @@ done
 install -Dpm 0644 $A/svg/skj-logo-mark.svg %{buildroot}%{_datadir}/icons/hicolor/scalable/apps/org.fedoraproject.AnacondaInstaller.svg
 install -Dpm 0644 $A/svg/skj-logo-mark-symbolic.svg %{buildroot}%{_datadir}/icons/hicolor/symbolic/apps/org.fedoraproject.AnacondaInstaller-symbolic.svg
 
+# Anaconda web UI (Cockpit) branding: cockpit-ws looks up branding/<ID> first
+C=%{buildroot}%{_datadir}/cockpit/branding/skj-os-ez
+install -Dpm 0644 $S/cockpit-branding.css $C/branding.css
+ln -s ../../../pixmaps/system-logo-white.png $C/logo.png
+ln -s ../../../pixmaps/fedora-logo-sprite.png $C/apple-touch-icon.png
+ln -s ../../../../../etc/favicon.png $C/favicon.ico
+
 # Watermark used by the stock spinner/bgrt Plymouth themes
 install -Dpm 0644 $A/plymouth-watermark.png %{buildroot}%{_datadir}/plymouth/themes/spinner/watermark.png
 
@@ -172,6 +179,9 @@ fi
 %{_datadir}/anaconda/pixmaps/topbar-bg.png
 %{_datadir}/anaconda/pixmaps/anaconda_header.png
 %{_datadir}/anaconda/pixmaps/fedora.css
+%dir %{_datadir}/cockpit
+%dir %{_datadir}/cockpit/branding
+%{_datadir}/cockpit/branding/skj-os-ez/
 %dir %{_datadir}/plymouth/themes/spinner
 %{_datadir}/plymouth/themes/spinner/watermark.png
 
@@ -189,6 +199,10 @@ fi
 %{_datadir}/skj/fastfetch/
 
 %changelog
+* Fri Oct 02 2026 SKJ OS <jnowakowski741@gmail.com> - 44.0-3
+- Cockpit branding for skj-os-ez: the Anaconda web UI installer header
+  uses the SKJ palette instead of Fedora blue
+
 * Fri Oct 02 2026 SKJ OS <jnowakowski741@gmail.com> - 44.0-2
 - Ship the org.fedoraproject.AnacondaInstaller icon (SKJ logo) so
   "Install to Hard Drive" no longer shows a blank icon
