@@ -1,0 +1,11 @@
+{
+  "_comment": "Snap name -> AppStream id, for snaps that AppStream can't link by name. Keep it small: only apps whose snap name differs from the app's name.",
+  "spotify": "com.spotify.Client",
+  "code": "com.visualstudio.code",
+  "discord": "com.discordapp.Discord",
+  "slack": "com.slack.Slack",
+  "zoom-client": "us.zoom.Zoom",
+  "telegram-desktop": "org.telegram.desktop",
+  "obs-studio": "com.obsproject.Studio",
+  "steam": "com.valvesoftware.Steam"
+}
