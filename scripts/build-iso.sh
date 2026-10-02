@@ -2,11 +2,14 @@
 # Build the SKJ OS EZ ISO Edition (KDE Plasma) live/install ISO with kiwi,
 # Fedora's official live-ISO build tool.
 #
-# Run as root, from anywhere:
-#   sudo ./scripts/build-iso.sh 2>&1 | tee build.log
+# Normally run by GitHub Actions (.github/workflows/build-iso.yml) as root
+# inside a privileged fedora:44 container. Do not run it on a desktop with
+# SELinux enforcing: it blocks kiwi's %sysusers scriptlets.
 #
-# Before this, build the branding RPMs as your normal user:
-#   ./scripts/build-rpms.sh
+# Manual run (root, e.g. in a fedora:44 container), after ./scripts/build-rpms.sh:
+#   ./scripts/build-iso.sh 2>&1 | tee build.log
+#
+# Env: MIN_FREE_GB (default 40) - free space required under build/.
 #
 # What it does (and nothing else):
 #   1. installs the build tools from the Fedora repos (kiwi, createrepo_c, ...)
@@ -14,7 +17,8 @@
 #   3. runs kiwi with profile SKJ-EZ-KDE-Live             -> build/kiwi/
 #   4. copies the ISO + checksum to out/ and gives them to you
 # It never reboots and only deletes its own work dirs inside this project
-# (build/iso-repo and build/kiwi).
+# (build/iso-repo and build/kiwi), and refuses to even do that while anything
+# is mounted under build/ (kiwi bind-mounts /dev, /proc, /sys into its root).
 
 set -Eeuo pipefail
 
@@ -30,11 +34,31 @@ ISO_REPO="$ROOT/build/iso-repo"
 TARGET="$ROOT/build/kiwi"
 OUT="$ROOT/out"
 OWNER="${SUDO_USER:-}"
+MIN_FREE_GB="${MIN_FREE_GB:-40}"
 
 step() { echo; echo "==> [$(date '+%F %T')] $*"; }
 
+# Delete one of our work dirs under build/. Refuses while anything is mounted
+# under build/ (a crashed kiwi run can leave the host's /dev bind-mounted in
+# its root), and never crosses into another filesystem.
+safe_rm() {
+	local dir="$1" mounts
+	case "$dir" in
+		"$ROOT"/build/?*) ;;
+		*) echo "safe_rm: refusing to delete $dir (not under $ROOT/build/)" >&2; exit 1 ;;
+	esac
+	mounts=$(findmnt -rn -o TARGET | awk -v p="$ROOT/build/" 'index($0, p) == 1')
+	if [ -n "$mounts" ]; then
+		echo "Refusing to delete $dir - still mounted under $ROOT/build/:" >&2
+		echo "$mounts" >&2
+		echo "Unmount these first (umount -R), then rerun." >&2
+		exit 1
+	fi
+	rm -rf --one-file-system "$dir"
+}
+
 if [ "$(id -u)" -ne 0 ]; then
-	echo "Run this as root: sudo $0 2>&1 | tee build.log" >&2
+	echo "Run this as root (in a fedora:44 container): $0 2>&1 | tee build.log" >&2
 	exit 1
 fi
 
@@ -53,10 +77,11 @@ for p in skj-release skj-logos skj-backgrounds-kde plymouth-theme-skj skj-fastfe
 	ls "$RPM_DIR"/$p-[0-9]*.noarch.rpm >/dev/null
 done
 
-free_gb=$(df -BG --output=avail "$ROOT" | tail -1 | tr -dc '0-9')
+mkdir -p "$ROOT/build"
+free_gb=$(df -BG --output=avail "$ROOT/build" | tail -1 | tr -dc '0-9')
 echo "free space on build disk: ${free_gb} GB"
-if [ "$free_gb" -lt 40 ]; then
-	echo "Need at least 40 GB free for the build." >&2
+if [ "$free_gb" -lt "$MIN_FREE_GB" ]; then
+	echo "Need at least $MIN_FREE_GB GB free for the build." >&2
 	exit 1
 fi
 
@@ -66,18 +91,18 @@ step "Installing build tools (Fedora repos only)"
 # machine are not touched. No system upgrade, no reboot.
 dnf5 install -y --repo=fedora --repo=updates \
 	kiwi-cli kiwi-systemdeps distribution-gpg-keys createrepo_c erofs-utils xorriso
-kiwi-ng --version
+kiwi-ng --version || true
 
 # --- 2. local repo with the SKJ packages ----------------------------------------
 step "Creating local repo with the SKJ packages"
-rm -rf "$ISO_REPO"
+safe_rm "$ISO_REPO"
 mkdir -p "$ISO_REPO"
 cp -v "${rpms[@]}" "$ISO_REPO"/
 createrepo_c "$ISO_REPO"
 
 # --- 3. kiwi build ------------------------------------------------------------
 step "Building the ISO with kiwi (profile $PROFILE) - this takes a while"
-rm -rf "$TARGET"
+safe_rm "$TARGET"
 mkdir -p "$TARGET"
 cd "$ROOT/kiwi"
 kiwi-ng --type=iso --profile="$PROFILE" --kiwi-file="$KIWI_FILE" \
