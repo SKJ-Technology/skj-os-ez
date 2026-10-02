@@ -94,7 +94,15 @@ def demo_backends() -> list[FakeBackend]:
             o(Source.DISTRO, "htop", "htop", "See what's using your PC", "htop", kind=Kind.SYSTEM),
         ],
         [
-            UpdateItem(Source.DISTRO, "kernel", "Linux kernel", "7.2.8", "7.2.9", 90_000_000, True),
+            UpdateItem(
+                Source.DISTRO,
+                "kernel-core;7.2.9-200.fc44;x86_64;updates",
+                "kernel-core",
+                "7.2.8",
+                "7.2.9",
+                90_000_000,
+                True,
+            ),
             UpdateItem(Source.DISTRO, "firefox", "Firefox", "156.0.1", "156.0.2", 80_000_000),
         ],
     )
