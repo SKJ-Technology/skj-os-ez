@@ -1,6 +1,6 @@
 Name:           skj-logos
 Version:        44.0
-Release:        1%{?dist}
+Release:        2%{?dist}
 Summary:        SKJ OS EZ logos and icons
 License:        CC-BY-SA-4.0 AND OFL-1.1
 BuildArch:      noarch
@@ -92,6 +92,13 @@ install -Dpm 0644 $A/anaconda-header.png       %{buildroot}%{_datadir}/anaconda/
 # the inherited Fedora Anaconda profile loads its stylesheet from this path
 install -Dpm 0644 $S/skj.css                   %{buildroot}%{_datadir}/anaconda/pixmaps/fedora.css
 install -Dpm 0644 $A/icons/256/skj-logo-icon.png %{buildroot}%{_datadir}/icons/hicolor/256x256/apps/anaconda.png
+# "Install to Hard Drive" (liveinst.desktop) uses this icon name; on Fedora it
+# comes from fedora-logos and breeze-icon-theme-fedora, which we don't ship.
+for s in 16 22 24 32 48 64 96 128 256 512; do
+  install -Dpm 0644 $A/icons/$s/skj-logo-icon.png %{buildroot}%{_datadir}/icons/hicolor/${s}x${s}/apps/org.fedoraproject.AnacondaInstaller.png
+done
+install -Dpm 0644 $A/svg/skj-logo-mark.svg %{buildroot}%{_datadir}/icons/hicolor/scalable/apps/org.fedoraproject.AnacondaInstaller.svg
+install -Dpm 0644 $A/svg/skj-logo-mark-symbolic.svg %{buildroot}%{_datadir}/icons/hicolor/symbolic/apps/org.fedoraproject.AnacondaInstaller-symbolic.svg
 
 # Watermark used by the stock spinner/bgrt Plymouth themes
 install -Dpm 0644 $A/plymouth-watermark.png %{buildroot}%{_datadir}/plymouth/themes/spinner/watermark.png
@@ -142,6 +149,9 @@ fi
 %{_datadir}/icons/hicolor/*/apps/fedora-logo-icon.png
 %{_datadir}/icons/hicolor/*/places/start-here.png
 %{_datadir}/icons/hicolor/256x256/apps/anaconda.png
+%{_datadir}/icons/hicolor/*/apps/org.fedoraproject.AnacondaInstaller.png
+%{_datadir}/icons/hicolor/scalable/apps/org.fedoraproject.AnacondaInstaller.svg
+%{_datadir}/icons/hicolor/symbolic/apps/org.fedoraproject.AnacondaInstaller-symbolic.svg
 %{_datadir}/icons/hicolor/scalable/apps/skj-logo-icon.svg
 %{_datadir}/icons/hicolor/scalable/apps/start-here.svg
 %{_datadir}/icons/hicolor/scalable/places/start-here.svg
@@ -179,5 +189,9 @@ fi
 %{_datadir}/skj/fastfetch/
 
 %changelog
+* Fri Oct 02 2026 SKJ OS <jnowakowski741@gmail.com> - 44.0-2
+- Ship the org.fedoraproject.AnacondaInstaller icon (SKJ logo) so
+  "Install to Hard Drive" no longer shows a blank icon
+
 * Tue Sep 29 2026 SKJ OS <jnowakowski741@gmail.com> - 44.0-1
 - First SKJ OS EZ logos, wallpaper, boot splash and fastfetch logo
