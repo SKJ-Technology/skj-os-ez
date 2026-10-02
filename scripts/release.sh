@@ -27,6 +27,13 @@ SERVER="${GITHUB_SERVER_URL:-https://github.com}"
 
 step() { echo; echo "==> [$(date '+%F %T')] $*"; }
 
+# PR descriptions and commit messages carry tool attribution lines
+# ("Generated with Claude Code", "Co-Authored-By: ..."); keep them out of the
+# release notes and squeeze the blank lines they leave behind.
+strip_attribution() {
+	tr -d '\r' | sed -e '/Generated with \[Claude Code\]/d' -e '/^Co-Authored-By:/Id' | cat -s
+}
+
 shopt -s nullglob
 isos=("$SRC_DIR"/*.iso)
 pkgs=("$SRC_DIR"/*.packages)
@@ -79,11 +86,11 @@ notes="$STAGE/notes.md"
 	if [ -n "$pr_json" ]; then
 		echo "## Changes: #$(jq -r .number <<<"$pr_json") $(jq -r .title <<<"$pr_json")"
 		echo
-		jq -r '.body // ""' <<<"$pr_json"
+		jq -r '.body // ""' <<<"$pr_json" | strip_attribution
 	else
 		echo "## Changes"
 		echo
-		gh api "repos/$REPO/commits/$SHA" --jq .commit.message
+		gh api "repos/$REPO/commits/$SHA" --jq .commit.message | strip_attribution
 	fi
 	echo
 	echo "## Download"
