@@ -1,0 +1,77 @@
+# Build the SKJ OS EZ ISO Edition (KDE Plasma) ISO on every PR and push to
+# main, inside a privileged fedora:44 container. Green builds of main are
+# published as GitHub pre-releases (scripts/release.sh); PR builds never are.
+name: Build ISO
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write   # create releases and tags
+
+concurrency:
+  group: build-iso-${{ github.event.pull_request.number || github.ref }}
+  # a new push to a PR replaces its running build; builds of main all finish
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    steps:
+      - name: Free disk space
+        run: |
+          df -h / /mnt
+          sudo swapoff -a || true
+          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /usr/local/.ghcup \
+            /opt/hostedtoolcache/CodeQL /usr/share/swift /usr/local/share/boost \
+            /usr/lib/jvm /opt/microsoft /opt/google /usr/local/julia* /mnt/swapfile /swapfile
+          sudo docker image prune --all --force
+          df -h / /mnt
+
+      - uses: actions/checkout@v5
+
+      - name: Pick the work disk
+        run: |
+          # build/, out/ and kiwi's package cache go on whichever disk has more room
+          root_free=$(df -BG --output=avail / | tail -1 | tr -dc '0-9')
+          mnt_free=$(df -BG --output=avail /mnt 2>/dev/null | tail -1 | tr -dc '0-9' || true)
+          if [ "${mnt_free:-0}" -gt "$root_free" ]; then work=/mnt/skj; else work="$RUNNER_TEMP/skj"; fi
+          sudo mkdir -p "$work/build" "$work/out" "$work/kiwi-cache" "$work/release"
+          sudo chown "$(id -u):$(id -g)" "$work/release"
+          echo "WORK=$work" >> "$GITHUB_ENV"
+          df -h "$work"
+
+      - name: Build RPMs and ISO (privileged fedora:44 container)
+        run: |
+          docker run --rm --privileged \
+            -v "$GITHUB_WORKSPACE:/src" \
+            -v "$WORK/build:/src/build" \
+            -v "$WORK/out:/src/out" \
+            -v "$WORK/kiwi-cache:/var/cache/kiwi" \
+            -e MIN_FREE_GB=25 \
+            -w /src \
+            fedora:44 \
+            bash -Eeuo pipefail -c '
+              dnf5 install -y --setopt=install_weak_deps=False rpm-build util-linux findutils
+              ./scripts/build-rpms.sh
+              ./scripts/build-iso.sh
+            '
+          ls -lh "$WORK/out"
+
+      - name: Upload kiwi log
+        if: always()
+        uses: actions/upload-artifact@v5
+        with:
+          name: kiwi-log
+          path: ${{ env.WORK }}/build/kiwi.log
+          if-no-files-found: ignore
+
+      - name: Publish pre-release
+        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: ./scripts/release.sh "$WORK/out" "$WORK/release"
