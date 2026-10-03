@@ -1,0 +1,4 @@
+#!/bin/sh
+# SKJ Hub launcher: the app lives in /usr/share/skj-hub
+export PYTHONPATH=/usr/share/skj-hub${PYTHONPATH:+:$PYTHONPATH}
+exec /usr/bin/python3 -m skj_hub "$@"

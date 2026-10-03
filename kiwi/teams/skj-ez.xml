@@ -16,6 +16,10 @@
 		<package name="plymouth-theme-skj"/>
 		<package name="skj-fastfetch-config"/>
 		<package name="fastfetch"/>
+		<!-- SKJ Hub: app store, updates, help (replaces Discover) -->
+		<package name="skj-hub"/>
+		<!-- Snap on every base (Notion): needed for e.g. Spotify's official package -->
+		<package name="snapd"/>
 		<!-- Fedora branding, replaced by the SKJ packages above -->
 		<ignore name="fedora-release"/>
 		<ignore name="fedora-release-*"/>

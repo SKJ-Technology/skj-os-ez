@@ -73,7 +73,7 @@ if [ ${#rpms[@]} -eq 0 ]; then
 	echo "No RPMs in $RPM_DIR - run ./scripts/build-rpms.sh (as your user) first." >&2
 	exit 1
 fi
-for p in skj-release skj-logos skj-backgrounds-kde plymouth-theme-skj skj-fastfetch-config; do
+for p in skj-release skj-logos skj-backgrounds-kde plymouth-theme-skj skj-fastfetch-config skj-hub; do
 	ls "$RPM_DIR"/$p-[0-9]*.noarch.rpm >/dev/null
 done
 
