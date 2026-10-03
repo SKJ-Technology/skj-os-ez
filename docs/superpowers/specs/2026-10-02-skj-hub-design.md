@@ -1,6 +1,8 @@
 # SKJ Hub — design
 
-Status: **draft for Jakub's review** (written 2026-10-02 while he was away).
+Status: **in use** — written 2026-10-02 while Jakub was away; on 2026-10-03 he
+reviewed the first build, answered §9 question 5, and said to merge so the hub
+can be tested in the VM. §9 lists what is decided and what is still a default.
 Source of truth for the product: Notion "SKJ OS ISO EZ Edition" (Daily App
 Ideas). This spec turns it into a build plan for the hub. Anything marked
 **[assumption]** is my call and needs a yes/no from Jakub; everything else
@@ -132,6 +134,15 @@ on anything else the hub starts and shows only what works.
   The app page still lists the other sources under "Other versions" for
   people who care; beginners never have to choose.
 - Already-installed apps keep the source they were installed from.
+- **Browsing** (Jakub's review, 2026-10-03): with an empty search box the Apps
+  page lists every desktop app, A-Z, 40 at a time ("Show more"), with a group
+  picker in plain words (Games, Internet, Music & video, Photos & graphics,
+  Office, Learning & science, Tools, Programming, System) mapped from
+  freedesktop categories. The list comes from AppStream (about 3,900 apps in
+  3 s on Jakub's PC). The Snap Store can't be listed in full, so snaps join
+  the list only for the apps in `app-map.json`; that keeps Spotify on the
+  official snap when browsing, same as in search.
+  Later: order by popularity / a "Recommended" group instead of plain A-Z.
 
 ### 4.3 Jobs
 Every install/remove/update runs as a `Job` on a worker thread (GI sync calls,
@@ -177,6 +188,10 @@ displays (kscreen), shortcuts, panels — via KDE's own config/D-Bus. Once the
 settings pages cover what beginners need, System Settings is hidden from the
 menu on SKJ OS EZ (not removed: KDE modules still use parts of it).
 
+Decided by Jakub (2026-10-03): hide it, and the hub's settings area says in
+plain words that these are the basic settings, and that the full KDE System
+Settings exist for more advanced users, with a button that opens them.
+
 ### 4.6 Rollback and safety (phase 3, outline)
 Opt-in switch "Let me undo updates": Fedora → Snapper snapshots before each
 update + grub-btrfs boot entries; one "Undo last update" button. Ubuntu →
@@ -191,7 +206,12 @@ scared of commands" text, red flags, optional ClamGuard (with generic defaults).
 - Polish + English from day one (Qt translations; follows the system language).
 - Errors: one sentence what happened, one sentence what to do, "Details" for
   the log. Never a raw traceback.
-- SKJ look: dark sidebar layout like ClamGuard, SKJ palette (#2563eb, #14b8a6).
+- Look: a standard KDE app (Jakub's review, 2026-10-03). The hub uses the
+  system's Qt style and colours (Breeze, light or dark as the user chose) and
+  ships no stylesheet; only font sizes are set. The first build's custom dark
+  theme made Breeze's dark icons invisible and didn't look like the rest of
+  the desktop. SKJ colours appear only in the letter tile for apps without
+  an icon.
 
 ## 6. Error handling
 - Backends never raise into the UI: every call returns a `Result`; exceptions
@@ -229,11 +249,20 @@ scared of commands" text, red flags, optional ClamGuard (with generic defaults).
   every base), Flathub enabled (Fedora already ships the flathub remote, seen
   on Jakub's PC), the hub pinned in the taskbar where Discover was.
 
-## 9. Open questions for Jakub
-1. Python + PySide6 OK, or another stack? (§3)
-2. Hub code in this repo under `hub/`, or a separate `skj-hub` repo? (§3)
+## 9. Questions for Jakub: status
+1. Python + PySide6 — **default in use** (not explicitly confirmed). (§3)
+2. Hub code in this repo under `hub/` — **default in use** (not explicitly
+   confirmed). (§3)
 3. Default-source tie-break: Flatpak first for apps, distro first for system
-   tools — OK? (§4.2)
-4. Hub name in the menu: "SKJ Hub"? Polish name?
-5. Should the hub replace KDE's System Settings completely in phase 2, or
-   only hide it from the menu (my suggestion, §4.5)?
+   tools — **default in use** (not explicitly confirmed). (§4.2)
+4. Name in the menu: "SKJ Hub" in both languages — **default in use** (not
+   explicitly confirmed).
+5. KDE System Settings in phase 2 — **decided 2026-10-03**: hide it from the
+   menu; the hub's settings say they are the basic ones and point to the KDE
+   settings for advanced users. (§4.5)
+
+## 10. Known gaps after phase 1
+- The hub is not pinned in the taskbar where Discover was (Plasma's default
+  launchers are compiled into the task manager; needs a layout change).
+- Real install / remove / update is untested until the first VM run.
+- Browse order is A-Z, not by popularity.

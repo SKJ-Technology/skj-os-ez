@@ -66,6 +66,15 @@ class FlatpakBackend(Backend):
             log.warning("flatpak search failed: %s", e)
             return []
 
+    def browse(self, group: str | None) -> list[Offer]:
+        try:
+            infos = self.index.browse(Source.FLATPAK, group)
+            installed = set(self._installed_refs()) if infos else set()
+            return [o for i in infos for o in to_offers(i, set(), installed)]
+        except Exception as e:
+            log.warning("listing flatpaks failed: %s", e)
+            return []
+
     def installed(self) -> list[Offer]:
         try:
             refs = set(self._installed_refs())

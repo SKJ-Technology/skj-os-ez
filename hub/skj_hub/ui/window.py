@@ -2,9 +2,10 @@
 
 from __future__ import annotations
 
-from PySide6.QtCore import QSize
+from PySide6.QtCore import QSize, Qt
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import (
+    QFrame,
     QHBoxLayout,
     QListWidget,
     QListWidgetItem,
@@ -56,13 +57,19 @@ class MainWindow(QMainWindow):
         self.nav = QListWidget()
         self.nav.setObjectName("nav")
         self.nav.setIconSize(QSize(22, 22))
+        self.nav.setFrameShape(QFrame.NoFrame)
+        self.nav.setSpacing(2)
+        # long names wrap instead of adding a scroll bar under the list
+        self.nav.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.nav.setWordWrap(True)
+        self.nav.setTextElideMode(Qt.ElideNone)
         for key in PAGES:
             QListWidgetItem(QIcon.fromTheme(ICONS[key]), tr(f"nav.{key}"), self.nav)
         self.nav.currentRowChanged.connect(self._on_nav)
 
         sidebar = QWidget()
         sidebar.setObjectName("sidebar")
-        sidebar.setFixedWidth(240)
+        sidebar.setFixedWidth(250)
         sl = QVBoxLayout(sidebar)
         sl.setContentsMargins(14, 20, 14, 14)
         sl.addWidget(label(tr("app.title"), "brand"))

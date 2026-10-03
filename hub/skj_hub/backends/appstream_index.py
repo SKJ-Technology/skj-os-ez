@@ -12,6 +12,7 @@ import logging
 import threading
 from dataclasses import dataclass
 
+from skj_hub.catalog.categories import in_group
 from skj_hub.catalog.model import Kind, Offer, Source
 
 log = logging.getLogger(__name__)
@@ -37,6 +38,7 @@ class ComponentInfo:
     flatpak_refs: tuple[str, ...]
     verified: bool
     icon: str | None = None
+    categories: tuple[str, ...] = ()
 
 
 def to_offers(
@@ -60,6 +62,7 @@ def to_offers(
                 installed=pkg in installed_pkgs,
                 kind=kind,
                 icon=info.icon,
+                categories=info.categories,
             )
         )
     for ref in info.flatpak_refs:
@@ -77,6 +80,7 @@ def to_offers(
                 installed=ref in installed_refs,
                 kind=kind,
                 icon=info.icon,
+                categories=info.categories,
             )
         )
     return offers
@@ -102,6 +106,7 @@ def _info(comp) -> ComponentInfo:  # AsComponent -> ComponentInfo
         flatpak_refs=refs,
         verified=comp.get_custom_value(VERIFIED_KEY) == "true",
         icon=icon,
+        categories=tuple(comp.get_categories() or ()),
     )
 
 
@@ -136,6 +141,22 @@ class AppStreamIndex:
             if source is Source.DISTRO and info.pkgnames:
                 found.append(info)
             elif source is Source.FLATPAK and info.flatpak_refs:
+                found.append(info)
+        return found
+
+    def browse(self, source: Source, group: str | None) -> list[ComponentInfo]:
+        """Every desktop app from one source, optionally only one group."""
+        pool = self._load()
+        found = []
+        for comp in pool.get_components().as_array():
+            if int(comp.get_kind()) != DESKTOP_APP:
+                continue
+            info = _info(comp)
+            if not in_group(info.categories, group):
+                continue
+            if (source is Source.DISTRO and info.pkgnames) or (
+                source is Source.FLATPAK and info.flatpak_refs
+            ):
                 found.append(info)
         return found
 

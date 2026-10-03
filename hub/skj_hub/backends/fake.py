@@ -9,6 +9,7 @@ from dataclasses import replace
 from threading import Event
 
 from skj_hub.backends.base import Backend, Progress, UpdateItem
+from skj_hub.catalog.categories import in_group
 from skj_hub.catalog.model import Kind, Offer, Source
 from skj_hub.result import Problem, Result
 
@@ -35,6 +36,13 @@ class FakeBackend(Backend):
     def search(self, text: str) -> list[Offer]:
         t = text.lower()
         return [o for o in self._offers.values() if t in o.name.lower() or t in o.summary.lower()]
+
+    def browse(self, group: str | None) -> list[Offer]:
+        if self.source is Source.SNAP:  # like the real Snap Store: search only
+            return []
+        return [
+            o for o in self._offers.values() if o.kind is Kind.APP and in_group(o.categories, group)
+        ]
 
     def installed(self) -> list[Offer]:
         return [o for o in self._offers.values() if o.installed]
@@ -74,28 +82,49 @@ class FakeBackend(Backend):
 
 def demo_backends() -> list[FakeBackend]:
     """A small believable catalog for running the UI without a real system."""
+    D, F, S = Source.DISTRO, Source.FLATPAK, Source.SNAP
 
-    def o(source, ref, name, summary, app_id=None, verified=False, installed=False, kind=Kind.APP):
-        return Offer(source, ref, app_id, name, summary, "1.0", verified, installed, kind)
+    def o(source, ref, name, summary, app_id=None, cats=(), **kw):
+        return Offer(source, ref, app_id, name, summary, "1.0", categories=tuple(cats), **kw)
+
+    def fp(app_id):
+        return f"app/{app_id}/x86_64/stable"
 
     distro = FakeBackend(
-        Source.DISTRO,
+        D,
         [
-            o(Source.DISTRO, "gimp", "GIMP", "Edit photos and pictures", "org.gimp.GIMP"),
-            o(Source.DISTRO, "vlc", "VLC", "Play any video or music", "org.videolan.VLC"),
+            o(D, "gimp", "GIMP", "Edit photos and pictures", "org.gimp.GIMP", ["Graphics"]),
+            o(D, "vlc", "VLC", "Play any video or music", "org.videolan.VLC", ["AudioVideo"]),
             o(
-                Source.DISTRO,
+                D,
                 "firefox",
                 "Firefox",
                 "Browse the web",
                 "org.mozilla.firefox",
+                ["Network"],
                 installed=True,
             ),
-            o(Source.DISTRO, "htop", "htop", "See what's using your PC", "htop", kind=Kind.SYSTEM),
+            o(
+                D,
+                "supertuxkart",
+                "SuperTuxKart",
+                "A kart racing game",
+                "net.supertuxkart.SuperTuxKart",
+                ["Game"],
+            ),
+            o(
+                D,
+                "libreoffice-writer",
+                "LibreOffice Writer",
+                "Write letters and documents",
+                "org.libreoffice.LibreOffice.writer",
+                ["Office"],
+            ),
+            o(D, "htop", "htop", "See what's using your PC", "htop", ["System"], kind=Kind.SYSTEM),
         ],
         [
             UpdateItem(
-                Source.DISTRO,
+                D,
                 "kernel-core;7.2.9-200.fc44;x86_64;updates",
                 "kernel-core",
                 "7.2.8",
@@ -103,41 +132,56 @@ def demo_backends() -> list[FakeBackend]:
                 90_000_000,
                 True,
             ),
-            UpdateItem(Source.DISTRO, "firefox", "Firefox", "156.0.1", "156.0.2", 80_000_000),
+            UpdateItem(D, "firefox", "Firefox", "156.0.1", "156.0.2", 80_000_000),
         ],
     )
     flatpak = FakeBackend(
-        Source.FLATPAK,
+        F,
         [
             o(
-                Source.FLATPAK,
-                "app/org.gimp.GIMP/x86_64/stable",
+                F,
+                fp("org.gimp.GIMP"),
                 "GIMP",
                 "Edit photos and pictures",
                 "org.gimp.GIMP",
-                verified=True,
+                ["Graphics"],
+                developer_verified=True,
             ),
             o(
-                Source.FLATPAK,
-                "app/com.spotify.Client/x86_64/stable",
+                F,
+                fp("com.spotify.Client"),
                 "Spotify",
                 "Music for everyone",
                 "com.spotify.Client",
+                ["AudioVideo"],
+            ),
+            o(
+                F,
+                fp("net.supertuxkart.SuperTuxKart"),
+                "SuperTuxKart",
+                "A kart racing game",
+                "net.supertuxkart.SuperTuxKart",
+                ["Game"],
+                developer_verified=True,
+            ),
+            o(
+                F,
+                fp("org.kde.kdenlive"),
+                "Kdenlive",
+                "Edit your videos",
+                "org.kde.kdenlive",
+                ["AudioVideo"],
+                developer_verified=True,
+                installed=True,
             ),
         ],
-        [
-            UpdateItem(
-                Source.FLATPAK,
-                "app/org.kde.kdenlive/x86_64/stable",
-                "Kdenlive",
-                "25.08",
-                "25.12",
-                120_000_000,
-            )
-        ],
+        [UpdateItem(F, fp("org.kde.kdenlive"), "Kdenlive", "25.08", "25.12", 120_000_000)],
     )
     snap = FakeBackend(
-        Source.SNAP,
-        [o(Source.SNAP, "spotify", "spotify", "Music for everyone", verified=True)],
+        S,
+        [
+            o(S, "spotify", "spotify", "Music for everyone", developer_verified=True),
+            o(S, "supertuxkart", "supertuxkart", "A kart racing game"),
+        ],
     )
     return [distro, flatpak, snap]

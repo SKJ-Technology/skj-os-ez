@@ -11,7 +11,7 @@ from concurrent.futures import ThreadPoolExecutor
 from threading import Event
 
 from skj_hub.backends.base import Backend, Progress, UpdateItem, no_progress
-from skj_hub.catalog.merge import group_offers
+from skj_hub.catalog.merge import group_offers, load_app_map
 from skj_hub.catalog.model import App, Offer, Source
 from skj_hub.platform import Platform, detect
 from skj_hub.result import Problem, Result
@@ -25,6 +25,8 @@ class Hub:
         self.platform = platform or detect()
         self._all = backends
         self._available: list[Backend] | None = None
+        self.demo = False  # True with --fake: the UI says it's demo data
+        self._snap_cache: dict[str, list[Offer]] = {}
 
     @property
     def backends(self) -> list[Backend]:
@@ -53,6 +55,29 @@ class Hub:
         return sorted(
             apps, key=lambda a: (not a.installed, not a.name.lower().startswith(t), a.name.lower())
         )
+
+    def browse(self, group: str | None = None) -> list[App]:
+        """All apps (or one group), A-Z.
+
+        The Snap Store can't be listed in full, so snaps only join for the
+        apps in app-map.json (e.g. Spotify): otherwise browsing would offer
+        the unofficial Flathub build where search offers the official snap.
+        """
+        offers = self._gather(lambda b: b.browse(group))
+        offers += self._known_snaps({o.app_id.lower() for o in offers if o.app_id})
+        return sorted(group_offers(offers), key=lambda a: a.name.lower())
+
+    def _known_snaps(self, app_ids: set[str]) -> list[Offer]:
+        snap = self.backend_for(Source.SNAP)
+        if snap is None:
+            return []
+        names = [n for n, app_id in load_app_map().items() if app_id.lower() in app_ids]
+        missing = [n for n in names if n not in self._snap_cache]
+        if missing:
+            with ThreadPoolExecutor(max_workers=min(8, len(missing))) as pool:
+                for name, found in zip(missing, pool.map(snap.search, missing), strict=True):
+                    self._snap_cache[name] = [o for o in found if o.ref == name]
+        return [o for n in names for o in self._snap_cache[n]]
 
     def installed_apps(self) -> list[App]:
         apps = group_offers(self._gather(lambda b: b.installed()))

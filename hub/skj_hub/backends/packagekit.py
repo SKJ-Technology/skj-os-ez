@@ -85,6 +85,15 @@ class PackageKitBackend(Backend):
             log.warning("distro search failed: %s", e)
             return []
 
+    def browse(self, group: str | None) -> list[Offer]:
+        try:
+            infos = self.index.browse(Source.DISTRO, group)
+            installed = self._installed_names() if infos else set()
+            return [o for i in infos for o in to_offers(i, installed, set())]
+        except Exception as e:
+            log.warning("listing distro apps failed: %s", e)
+            return []
+
     def installed(self) -> list[Offer]:
         try:
             names = self._installed_names()

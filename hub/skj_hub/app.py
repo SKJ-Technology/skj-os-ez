@@ -29,7 +29,9 @@ def make_hub(fake: bool):
     if fake:
         from skj_hub.backends.fake import demo_backends
 
-        return Hub(demo_backends())
+        hub = Hub(demo_backends())
+        hub.demo = True
+        return hub
     from skj_hub.hub import real_backends
 
     return Hub(real_backends())
@@ -57,13 +59,11 @@ def main(argv: list[str] | None = None) -> int:
     from PySide6.QtWidgets import QApplication
 
     from skj_hub import system
-    from skj_hub.ui.theme import stylesheet
     from skj_hub.ui.window import MainWindow
 
     app = QApplication(sys.argv[:1])
     app.setApplicationName("skj-hub")
     app.setDesktopFileName("skj-hub")
-    app.setStyleSheet(stylesheet())
     driver_probe = (lambda: None) if fake else system.driver_state
     restart = system.restart
     w = MainWindow(hub, driver_probe, restart)

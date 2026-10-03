@@ -44,6 +44,13 @@ class Backend(ABC):
     @abstractmethod
     def search(self, text: str) -> list[Offer]: ...
 
+    def browse(self, group: str | None) -> list[Offer]:
+        """Every app this source can list (group: see catalog/categories.py).
+
+        Sources that can't list their whole catalog (the Snap Store) return [].
+        """
+        return []
+
     @abstractmethod
     def installed(self) -> list[Offer]: ...
 

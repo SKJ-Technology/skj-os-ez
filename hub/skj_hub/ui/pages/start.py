@@ -18,16 +18,22 @@ class StartPage(QWidget):
         self.hub, self.jobs = hub, jobs
 
         hero = QFrame()
-        hero.setObjectName("hero")
         h = QVBoxLayout(hero)
-        h.setContentsMargins(32, 30, 32, 30)
-        h.setSpacing(10)
+        h.setContentsMargins(0, 0, 0, 0)
+        h.setSpacing(8)
         h.addWidget(label(tr("start.hello"), "heroTitle", wrap=True))
         h.addWidget(label(tr("start.sub"), wrap=True))
+        self.demo = label(tr("start.demo"), "muted", wrap=True)
+        self.demo.setVisible(getattr(hub, "demo", False))
+        h.addWidget(self.demo)
 
         row = QHBoxLayout()
-        row.addWidget(button(tr("start.find_apps"), "big", self.go_apps.emit))
-        row.addWidget(button(tr("start.check_updates"), "big", self.go_updates.emit))
+        row.addWidget(
+            button(tr("start.find_apps"), "big", self.go_apps.emit, "system-software-install")
+        )
+        row.addWidget(
+            button(tr("start.check_updates"), "big", self.go_updates.emit, "system-software-update")
+        )
         row.addStretch()
 
         self.updates = label("", "status", wrap=True)

@@ -59,7 +59,7 @@ def test_remove_not_installed():
 
 def test_installed_apps():
     names = [a.name for a in hub().installed_apps()]
-    assert names == ["Firefox"]
+    assert names == ["Firefox", "Kdenlive"]
 
 
 def test_update_plan_and_apply():
@@ -102,3 +102,38 @@ def test_new_kernels_from_packagekit_ids():
 def test_fake_backend_search_matches_summary():
     b = FakeBackend(Source.DISTRO, demo_backends()[0]._offers.values())
     assert [o.ref for o in b.search("photos")] == ["gimp"]
+
+
+def test_browse_all_lists_every_app_once_a_to_z():
+    names = [a.name for a in hub().browse()]
+    assert names == sorted(names, key=str.lower)
+    assert names.count("GIMP") == 1  # distro + flatpak grouped
+    assert "htop" not in names  # command-line tools aren't listed
+    assert "SuperTuxKart" in names
+
+
+def test_browse_group():
+    assert [a.name for a in hub().browse("games")] == ["SuperTuxKart"]
+    assert {a.name for a in hub().browse("media")} == {"Kdenlive", "Spotify", "VLC"}
+
+
+def test_browse_unknown_group_is_empty():
+    assert hub().browse("nope") == []
+
+
+def test_browse_adds_known_official_snaps():
+    # Spotify: Flathub build is unofficial, the snap is verified -> Snap,
+    # in the browse list too (not only in search).
+    spotify = next(a for a in hub().browse("media") if a.name == "Spotify")
+    assert spotify.default.source is Source.SNAP
+
+
+def test_browse_asks_snap_store_only_once_per_app():
+    backends = demo_backends()
+    h = hub(backends)
+    seen = []
+    real_search = backends[2].search
+    backends[2].search = lambda text: seen.append(text) or real_search(text)
+    h.browse()
+    h.browse()
+    assert seen == ["spotify"]

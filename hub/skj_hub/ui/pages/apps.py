@@ -5,12 +5,22 @@ from __future__ import annotations
 from dataclasses import replace
 
 from PySide6.QtCore import Qt, QTimer
-from PySide6.QtWidgets import QLineEdit, QMessageBox, QScrollArea, QVBoxLayout, QWidget
+from PySide6.QtGui import QIcon
+from PySide6.QtWidgets import (
+    QComboBox,
+    QHBoxLayout,
+    QLineEdit,
+    QMessageBox,
+    QScrollArea,
+    QVBoxLayout,
+    QWidget,
+)
 
+from skj_hub.catalog.categories import GROUPS
 from skj_hub.catalog.model import App
 from skj_hub.i18n import tr
 from skj_hub.result import Problem, Result
-from skj_hub.ui.widgets import AppCard, label
+from skj_hub.ui.widgets import AppCard, button, label
 
 
 class _AppList(QWidget):
@@ -24,6 +34,10 @@ class _AppList(QWidget):
         self.list = QVBoxLayout(self.inner)
         self.list.setContentsMargins(0, 0, 8, 0)
         self.list.setSpacing(10)
+        self._pending: list[App] = []
+        self.more = button(tr("apps.show_more"), None, self._show_more)
+        self.more.hide()
+        self.list.addWidget(self.more, alignment=Qt.AlignHCenter)
         self.list.addStretch()
         scroll = QScrollArea()
         scroll.setWidgetResizable(True)
@@ -32,16 +46,24 @@ class _AppList(QWidget):
         lay.setContentsMargins(0, 0, 0, 0)
         lay.addWidget(scroll)
 
+    PAGE = 40
+
     def show_apps(self, apps: list[App]):
         for c in self.cards:
             c.deleteLater()
         self.cards = []
-        for app in apps[:60]:
+        self._pending = list(apps)
+        self._show_more()
+
+    def _show_more(self):
+        batch, self._pending = self._pending[: self.PAGE], self._pending[self.PAGE :]
+        for app in batch:
             c = AppCard(app)
             c.install_requested.connect(self._install)
             c.remove_requested.connect(self._remove)
-            self.list.insertWidget(self.list.count() - 1, c)
+            self.list.insertWidget(self.list.count() - 2, c)
             self.cards.append(c)
+        self.more.setVisible(bool(self._pending))
 
     def _card(self, app: App) -> AppCard | None:
         return next((c for c in self.cards if c.app is app), None)
@@ -86,6 +108,8 @@ class _AppList(QWidget):
 
 
 class AppsPage(QWidget):
+    """Browse every app by group, or search by name."""
+
     def __init__(self, hub, jobs, parent=None):
         super().__init__(parent)
         self.hub, self.jobs = hub, jobs
@@ -93,46 +117,66 @@ class AppsPage(QWidget):
         self.search.setObjectName("search")
         self.search.setPlaceholderText(tr("apps.search"))
         self.search.setClearButtonEnabled(True)
+        self.search.setMinimumHeight(40)
+        self.search.addAction(QIcon.fromTheme("search"), QLineEdit.LeadingPosition)
+        self.group = QComboBox()
+        self.group.setMinimumHeight(40)
+        for key in GROUPS:
+            self.group.addItem(tr(f"group.{key}"), key)
         self.state = label(tr("apps.hint"), "muted", wrap=True)
         self.results = _AppList(hub, jobs)
         self._query = 0
+        self._loaded = False
         self._timer = QTimer(self, singleShot=True, interval=400)
-        self._timer.timeout.connect(self._run_search)
+        self._timer.timeout.connect(self.refresh)
         self.search.textChanged.connect(lambda _: self._timer.start())
-        self.search.returnPressed.connect(self._run_search)
+        self.search.returnPressed.connect(self.refresh)
+        self.group.currentIndexChanged.connect(lambda _: self.refresh())
+
+        top = QHBoxLayout()
+        top.addWidget(self.search, 1)
+        top.addWidget(self.group)
 
         lay = QVBoxLayout(self)
         lay.setContentsMargins(28, 24, 28, 24)
         lay.setSpacing(14)
         lay.addWidget(label(tr("nav.apps"), "pageTitle"))
-        lay.addWidget(self.search)
+        lay.addLayout(top)
         lay.addWidget(self.state)
         lay.addWidget(self.results, 1)
 
     def focus_search(self):
         self.search.setFocus(Qt.OtherFocusReason)
+        if not self._loaded:
+            self.refresh()
 
-    def _run_search(self):
+    def refresh(self):
+        """Search when there's text, otherwise list the chosen group."""
+        self._loaded = True
         text = self.search.text().strip()
+        group = self.group.currentData()
         self._timer.stop()
         self._query += 1
         query = self._query
-        if len(text) < 2:
-            self.state.setText(tr("apps.hint"))
-            self.state.show()
-            self.results.show_apps([])
-            return
-        self.state.setText(tr("apps.searching"))
+        searching = len(text) >= 2
+        self.state.setText(tr("apps.searching") if searching else tr("apps.loading"))
         self.state.show()
 
         def done(apps):
-            if query != self._query:  # an older search finished late
+            if query != self._query:  # an older request finished late
                 return
             self.results.show_apps(apps)
-            self.state.setVisible(not apps)
-            self.state.setText(tr("apps.none"))
+            if not apps:
+                self.state.setText(tr("apps.none"))
+            elif searching:
+                self.state.hide()
+            else:
+                self.state.setText(tr("apps.hint") + " " + tr("apps.count", count=len(apps)))
 
-        self.jobs.query(lambda: self.hub.search(text), done)
+        if searching:
+            self.jobs.query(lambda: self.hub.search(text), done)
+        else:
+            self.jobs.query(lambda: self.hub.browse(group), done)
 
 
 class InstalledPage(QWidget):

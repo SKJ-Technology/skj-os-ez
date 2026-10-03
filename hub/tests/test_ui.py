@@ -120,3 +120,47 @@ def test_polish_ui(qtbot):
     assert w.nav.item(1).text() == "Aplikacje"
     assert w.updates.go.text() == "Zaktualizuj wszystko"
     w.jobs.wait(5000)
+
+
+def test_apps_page_lists_all_apps_without_searching(window, qtbot):
+    window.show_page("apps")
+    qtbot.waitUntil(lambda: len(window.apps.results.cards) >= 5, timeout=5000)
+    names = [c.app.name for c in window.apps.results.cards]
+    assert names == sorted(names, key=str.lower)
+    assert "SuperTuxKart" in names
+
+
+def test_apps_page_group_filter(window, qtbot):
+    window.show_page("apps")
+    page = window.apps
+    page.group.setCurrentIndex(page.group.findData("games"))
+    qtbot.waitUntil(
+        lambda: [c.app.name for c in page.results.cards] == ["SuperTuxKart"], timeout=5000
+    )
+
+
+def test_show_more_pages_long_lists(window, qtbot):
+    from skj_hub.catalog.model import App, Offer, Source
+
+    apps = [
+        App(f"a{i}", [Offer(Source.FLATPAK, f"r{i}", f"a{i}", f"App {i:03}", "", "1")])
+        for i in range(95)
+    ]
+    lst = window.apps.results
+    lst.show_apps(apps)
+    assert len(lst.cards) == 40 and lst.more.isVisibleTo(lst)
+    lst.more.click()
+    lst.more.click()
+    assert len(lst.cards) == 95 and not lst.more.isVisibleTo(lst)
+
+
+def test_sidebar_has_no_horizontal_scrollbar(window):
+    from PySide6.QtCore import Qt
+
+    assert window.nav.horizontalScrollBarPolicy() == Qt.ScrollBarAlwaysOff
+
+
+def test_no_custom_stylesheet(window):
+    from skj_hub.ui.theme import stylesheet
+
+    assert stylesheet() == ""  # standard KDE look: system style and colours

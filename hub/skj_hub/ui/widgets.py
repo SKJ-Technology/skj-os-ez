@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from PySide6.QtCore import QSize, Qt, Signal
-from PySide6.QtGui import QColor, QFont, QIcon, QLinearGradient, QPainter, QPixmap
+from PySide6.QtGui import QColor, QFont, QIcon, QLinearGradient, QPainter, QPalette, QPixmap
 from PySide6.QtWidgets import (
     QFrame,
     QHBoxLayout,
@@ -20,21 +20,52 @@ from PySide6.QtWidgets import (
 from skj_hub.catalog.model import App, Offer
 from skj_hub.i18n import problem_text, tr
 from skj_hub.result import Result
+from skj_hub.ui.theme import NEGATIVE
+
+# name -> (font scale, bold)
+_FONTS = {
+    "brand": (1.3, True),
+    "pageTitle": (1.6, True),
+    "heroTitle": (1.8, True),
+    "appName": (1.15, True),
+    "status": (1.15, True),
+}
 
 
 def label(text: str = "", name: str | None = None, wrap: bool = False) -> QLabel:
     w = QLabel(text)
     if name:
         w.setObjectName(name)
+    if name in _FONTS:
+        scale, bold = _FONTS[name]
+        f = w.font()
+        f.setPointSizeF(f.pointSizeF() * scale)
+        f.setBold(bold)
+        w.setFont(f)
+    elif name == "muted":
+        w.setForegroundRole(QPalette.PlaceholderText)
     w.setWordWrap(wrap)
     return w
 
 
-def button(text: str, name: str | None = None, slot=None) -> QPushButton:
+_ICONS = {"big": None, "danger": "edit-delete", "install": "download"}
+
+
+def button(text: str, name: str | None = None, slot=None, icon: str | None = None) -> QPushButton:
+    """A native button. name: None, "primary", "big", "danger" or "link"."""
     b = QPushButton(text)
     if name:
         b.setObjectName(name)
-    b.setCursor(Qt.PointingHandCursor)
+    if name == "big":
+        f = b.font()
+        f.setPointSizeF(f.pointSizeF() * 1.25)
+        b.setFont(f)
+        b.setMinimumHeight(48)
+    elif name == "link":
+        b.setFlat(True)
+    icon = icon or _ICONS.get(name or "")
+    if icon:
+        b.setIcon(QIcon.fromTheme(icon))
     if slot:
         b.clicked.connect(slot)
     return b
@@ -43,6 +74,7 @@ def button(text: str, name: str | None = None, slot=None) -> QPushButton:
 def card() -> QFrame:
     f = QFrame()
     f.setObjectName("card")
+    f.setFrameShape(QFrame.StyledPanel)
     return f
 
 
@@ -80,7 +112,8 @@ def app_icon(offer: Offer) -> QIcon:
         icon = QIcon(offer.icon) if offer.icon.startswith("/") else QIcon.fromTheme(offer.icon)
         if not icon.isNull():
             return icon
-    for name in (offer.app_id or "", offer.ref, "application-x-executable"):
+    # no generic fallback icon: the card draws a letter tile instead
+    for name in (offer.app_id or "", offer.ref):
         icon = QIcon.fromTheme(name)
         if not icon.isNull():
             return icon
@@ -95,7 +128,7 @@ class ProblemBox(QWidget):
         lay = QVBoxLayout(self)
         lay.setContentsMargins(0, 0, 0, 0)
         self.text = label(wrap=True)
-        self.text.setStyleSheet("color: #f0616d;")
+        self.text.setStyleSheet(f"color: {NEGATIVE};")
         self.toggle = button(tr("common.details"), "link", self._toggle)
         self.details = QPlainTextEdit()
         self.details.setReadOnly(True)
@@ -129,6 +162,7 @@ class AppCard(QFrame):
     def __init__(self, app: App, parent=None):
         super().__init__(parent)
         self.setObjectName("card")
+        self.setFrameShape(QFrame.StyledPanel)
         self.app = app
         offer = app.default
 
@@ -182,9 +216,7 @@ class AppCard(QFrame):
     def refresh(self):
         installed = self.app.installed
         self.main_button.setText(tr("apps.remove") if installed else tr("apps.install"))
-        self.main_button.setObjectName("danger" if installed else "primary")
-        self.main_button.style().unpolish(self.main_button)
-        self.main_button.style().polish(self.main_button)
+        self.main_button.setIcon(QIcon.fromTheme("edit-delete" if installed else "download"))
 
     def _main_clicked(self):
         if self.app.installed:

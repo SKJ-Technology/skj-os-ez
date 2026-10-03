@@ -32,6 +32,7 @@ class Offer:
     kind: Kind = Kind.APP
     icon: str | None = None
     download_size: int | None = None
+    categories: tuple[str, ...] = ()  # freedesktop categories, for browsing
 
 
 @dataclass
