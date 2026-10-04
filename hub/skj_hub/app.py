@@ -38,7 +38,7 @@ def make_hub(fake: bool):
 
 
 def main(argv: list[str] | None = None) -> int:
-    from skj_hub.ui.window import PAGES
+    from skj_hub.ui.qmlapp import PAGES
 
     p = argparse.ArgumentParser(prog="skj-hub", description="SKJ Hub")
     p.add_argument("--page", choices=PAGES, default="start")
@@ -56,20 +56,31 @@ def main(argv: list[str] | None = None) -> int:
 
         return notifier.run(hub)
 
+    from PySide6.QtGui import QIcon
     from PySide6.QtWidgets import QApplication
 
     from skj_hub import system
-    from skj_hub.ui.window import MainWindow
+    from skj_hub.ui import qmlapp
 
+    qmlapp.use_kde_style()
     app = QApplication(sys.argv[:1])
     app.setApplicationName("skj-hub")
-    app.setDesktopFileName("skj-hub")
+    app.setWindowIcon(QIcon.fromTheme("skj-logo-icon"))
+    # only when installed: without the menu entry the desktop portal complains
+    if Path("/usr/share/applications/skj-hub.desktop").exists():
+        app.setDesktopFileName("skj-hub")
     driver_probe = (lambda: None) if fake else system.driver_state
-    restart = system.restart
-    w = MainWindow(hub, driver_probe, restart)
-    w.show_page(args.page)
-    w.show()
-    return app.exec()
+    engine, bridge, window = qmlapp.load(hub, driver_probe, system.restart, args.page)
+    if window is None:
+        print(
+            "SKJ Hub: could not load its window (see ~/.local/state/skj-hub/hub.log)",
+            file=sys.stderr,
+        )
+        return 1
+    code = app.exec()
+    bridge.jobs.wait(2000)
+    qmlapp.shutdown(engine)  # before the bridge its bindings read
+    return code
 
 
 if __name__ == "__main__":

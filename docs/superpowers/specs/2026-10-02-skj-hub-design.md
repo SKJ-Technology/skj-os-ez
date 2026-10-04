@@ -54,6 +54,9 @@ E, F and G get their own specs.
 
 ## 3. Technology
 
+- **UI: QML + Kirigami** (`hub/skj_hub/qml/`), loaded by PySide6. QML only
+  binds to the Python bridge (`ui/bridge.py`: app list models, update state)
+  and never touches a backend.
 - **Python 3 + PySide6 (Qt 6).** [assumption] Same stack as ClamGuard, which
   Jakub already wrote; Qt fits KDE; available on every base.
 - System access through the same libraries KDE Discover uses, via PyGObject:
@@ -135,7 +138,7 @@ on anything else the hub starts and shows only what works.
   people who care; beginners never have to choose.
 - Already-installed apps keep the source they were installed from.
 - **Browsing** (Jakub's review, 2026-10-03): with an empty search box the Apps
-  page lists every desktop app, A-Z, 40 at a time ("Show more"), with a group
+  page lists every desktop app, A-Z (one scrolling list), with a group
   picker in plain words (Games, Internet, Music & video, Photos & graphics,
   Office, Learning & science, Tools, Programming, System) mapped from
   freedesktop categories. The list comes from AppStream (about 3,900 apps in
@@ -206,12 +209,15 @@ scared of commands" text, red flags, optional ClamGuard (with generic defaults).
 - Polish + English from day one (Qt translations; follows the system language).
 - Errors: one sentence what happened, one sentence what to do, "Details" for
   the log. Never a raw traceback.
-- Look: a standard KDE app (Jakub's review, 2026-10-03). The hub uses the
-  system's Qt style and colours (Breeze, light or dark as the user chose) and
-  ships no stylesheet; only font sizes are set. The first build's custom dark
-  theme made Breeze's dark icons invisible and didn't look like the rest of
-  the desktop. SKJ colours appear only in the letter tile for apps without
-  an icon.
+- Look: a real KDE app (Jakub, 2026-10-04: "make it use some library that
+  actual KDE apps use"). The window is written in QML with **Kirigami**, the
+  framework Discover and System Settings use, with KDE's Qt Quick style
+  (`org.kde.desktop`): global drawer for navigation, page toolbar, search
+  field, inline messages, prompt dialogs. Colours and icons come from the
+  user's colour scheme. History: v0.1 had a custom dark Qt Widgets theme
+  (Breeze's dark icons were invisible on it), then plain Qt Widgets with the
+  Breeze style (worked, but still didn't look like a KDE app).
+  SKJ colours appear only in the letter tile for apps without an icon.
 
 ## 6. Error handling
 - Backends never raise into the UI: every call returns a `Result`; exceptions
