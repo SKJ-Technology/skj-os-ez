@@ -44,7 +44,6 @@ STRINGS: dict[str, dict[str, str]] = {
     },
     "apps.loading": {"en": "Loading apps…", "pl": "Wczytuję aplikacje…"},
     "apps.count": {"en": "({count} apps)", "pl": "(aplikacji: {count})"},
-    "apps.show_more": {"en": "Show more", "pl": "Pokaż więcej"},
     "group.all": {"en": "All apps", "pl": "Wszystkie aplikacje"},
     "group.games": {"en": "Games", "pl": "Gry"},
     "group.internet": {"en": "Internet", "pl": "Internet"},

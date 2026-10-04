@@ -1,6 +1,6 @@
 [project]
 name = "skj-hub"
-version = "0.1.0"
+version = "0.2.0"
 description = "SKJ Hub: app store, updates and settings for SKJ OS EZ"
 requires-python = ">=3.12"
 license = "MIT"

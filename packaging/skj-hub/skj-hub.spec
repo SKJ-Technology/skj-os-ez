@@ -3,7 +3,7 @@
 %{!?_userpresetdir:%global _userpresetdir /usr/lib/systemd/user-preset}
 
 Name:           skj-hub
-Version:        0.1.0
+Version:        0.2.0
 Release:        1%{?dist}
 Summary:        SKJ Hub: apps, updates and help for SKJ OS EZ
 License:        MIT
@@ -12,6 +12,9 @@ BuildArch:      noarch
 
 Requires:       python3
 Requires:       python3-pyside6
+# UI: Kirigami, like Discover and System Settings
+Requires:       kf6-kirigami
+Requires:       kf6-qqc2-desktop-style
 Requires:       python3-gobject
 Requires:       PackageKit
 Requires:       PackageKit-glib
@@ -57,6 +60,10 @@ fi
 %{_userpresetdir}/90-skj-hub.preset
 
 %changelog
+* Sun Oct 04 2026 SKJ OS <jnowakowski741@gmail.com> - 0.2.0-1
+- UI rewritten in Kirigami (QML), the toolkit KDE's own apps use
+- Browse all apps by group
+
 * Fri Oct 02 2026 SKJ OS <jnowakowski741@gmail.com> - 0.1.0-1
 - First build: app store (Flatpak, dnf via PackageKit, Snap), one-button
   updates, update notifier, help page; Polish and English
